@@ -3,7 +3,7 @@ name: Release and Update Homebrew
 on:
   push:
     tags:
-      - 'v*' # Triggers on tags like v1.0.0
+      - 'v*'
 
 permissions:
   contents: write
@@ -17,10 +17,12 @@ jobs:
 
       - name: Build Application
         run: |
-          swift build -c release
+          swift build -c release --arch arm64 --arch x86_64
           mkdir -p build/SwiftPicker.app/Contents/MacOS
-          cp .build/release/SwiftPicker build/SwiftPicker.app/Contents/MacOS/SwiftPicker
+          mkdir -p build/SwiftPicker.app/Contents/Resources
+          cp .build/apple/Products/Release/SwiftPicker build/SwiftPicker.app/Contents/MacOS/SwiftPicker
           cp Resources/Info.plist build/SwiftPicker.app/Contents/Info.plist
+          echo "APPL????" > build/SwiftPicker.app/Contents/PkgInfo
 
       - name: Package Application
         run: |
@@ -41,11 +43,9 @@ jobs:
           SHA256=$(shasum -a 256 SwiftPicker.app.zip | awk '{print $1}')
           VERSION=${GITHUB_REF#refs/tags/v}
           
-          # This assumes you have a repo named 'homebrew-tap'
           git clone https://x-access-token:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/indranandjha1993/homebrew-tap.git
           cd homebrew-tap
           
-          # Update the formula
           sed -i '' "s/version \".*\"/version \"$VERSION\"/" Casks/swiftpicker.rb
           sed -i '' "s/sha256 \".*\"/sha256 \"$SHA256\"/" Casks/swiftpicker.rb
           sed -i '' "s|url \".*\"|url \"https://github.com/indranandjha1993/SwiftPicker/releases/download/v$VERSION/SwiftPicker.app.zip\"|" Casks/swiftpicker.rb
