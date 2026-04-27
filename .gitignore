@@ -38,3 +38,6 @@ DerivedData/
 *.xcworkspace/
 !default.xcworkspace
 xcuserdata/
+
+# IDEs
+.vscode/
